@@ -23,3 +23,16 @@ resources
 src
 test
 #+end_src
+
+* Hello world web app
+
+Add =ring= as a dependency in =project.clj=.
+
+Modify =core.clj=:
+- Import ring with =require=
+- Change main to call a ring function to which we pass a function.
+  We also give it a port which is 8080 in this case.
+- This function =app-handler= returns a map which is our HTML response.
+  
+Now we can do =lein run= and go to =localhost:8080= and see the HTML returned by
+our app.
