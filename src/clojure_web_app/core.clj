@@ -1,20 +1,18 @@
 (ns clojure-web-app.core
-  (:require [ring.adapter.jetty :refer [run-jetty]])
+  (:require [ring.adapter.jetty :refer [run-jetty]]
+            [compojure.core :refer :all]
+            [compojure.route :as route])
   (:gen-class))
 
-(defn app-handler [request]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "<H1>Hello World</H1>"})
+(defroutes app
+  (GET "/" [] "<H1>ROOT</H1>")
+  (GET "/other" [] "<H1>OTHER</H1>"))
 
 (defn -main
   "Main function of the application"
   [& args]
-  (run-jetty app-handler {:port 8080})
+  (run-jetty app {:port 8080})
 )
 
 (defn hello []
   (println "hello"))
-
-
-

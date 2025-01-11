@@ -36,3 +36,19 @@ Modify =core.clj=:
   
 Now we can do =lein run= and go to =localhost:8080= and see the HTML returned by
 our app.
+
+* Adding routes
+
+Add =compojure= as a dependency.
+
+Import =compojure.core= and =compojure.route=.
+
+Instead of defining a function =app-handler= as a regular function, define =app=
+using the =defroutes= macro.
+
+Use =app= in the call to =run-jetty=.
+
+Now we can go to =localhost:8080= and =localhost:8080/other= and see different
+HTML.
+
+
