@@ -1,0 +1,25 @@
+#+TITLE: Notes from the tutorial
+
+* Prerequisites
+
+** Leiningen
+
+Some kind of build tool.  It can be installed with =brew install leiningen=.
+* Initialize the project
+
+Run
+#+begin_src sh
+lein new app <name>
+#+end_src
+which is how this directory was created with the following files:
+
+#+begin_src
+CHANGELOG.md
+LICENSE
+README.md
+doc
+project.clj
+resources
+src
+test
+#+end_src
