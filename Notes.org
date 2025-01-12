@@ -52,3 +52,26 @@ Now we can go to =localhost:8080= and =localhost:8080/other= and see different
 HTML.
 
 
+
+
+
+* Stuff I installed
+
+- =brew install leiningen=
+
+** Straight clojure
+
+While installing leiningen with brew did do everything I needed and seemed to
+come with its JVM, while working on this tutorial, I went back to the basics to
+do a plain clojure tutorial.
+
+It told me to do =brew install clojure/tools/clojure= which would give me the
+command =clj=.  When I did run that command, I got a message
+
+#+begin_src
+The operation couldn’t be completed. Unable to locate a Java Runtime.
+Please visit http://www.java.com for information on installing Java.
+#+end_src
+
+Also it is interesting that MacOS comes with =/usr/bin/java= which also prints
+that message.
