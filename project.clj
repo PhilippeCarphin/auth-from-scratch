@@ -6,6 +6,11 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [ring "1.8.0"]
                  [compojure "1.6.2"]]
+  :repl-options {:init-ns clojure-web-app.core
+                 :prompt (fn [ns]
+                         (str "\033[1;32m"
+                              ns "=>"
+                              "\033[0m "))}
   :main ^:skip-aot clojure-web-app.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
