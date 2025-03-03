@@ -1,0 +1,30 @@
+#+TITLE: Clojure Web App: Auth From Scratch
+
+This is an experiment in doing authentication from scratch.
+
+The goal is to understand the very basics so that I can better understand how to
+use libraries for such things.
+
+And learn to use Clojure along the way.
+
+* Requirements
+
+[[https://leiningen.org][Leiningen]]
+
+On MacOS, installed with Homebrew.
+
+* Running
+
+From the root of the project do
+
+#+begin_src shell
+lein run
+#+end_src
+
+Or start a REPL with
+
+#+begin_src shell
+lein repl
+#+end_src
+
+In the REPL, do =(-main)= to start the server.
