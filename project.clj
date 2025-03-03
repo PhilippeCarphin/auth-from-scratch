@@ -5,7 +5,9 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [ring "1.8.0"]
-                 [compojure "1.6.2"]]
+                 [compojure "1.6.2"]
+                 ; [buddy/buddy-core "1.7.1"] ;; Disqualified because of name
+                 [crypto-password "0.3.0"]]
   :repl-options {:init-ns clojure-web-app.core
                  :prompt (fn [ns]
                          (str "\033[1;32m"

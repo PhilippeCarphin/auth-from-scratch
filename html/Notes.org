@@ -1,0 +1,89 @@
+#+TITLE: Notes about auth-from-scratch
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../json.css"/>
+
+* First setup: Static web pages
+
+First iteration:
+
+Files for this site are in the form of links in my =~/public_html= and are
+served by Nginx.
+
+#+begin_example
+~/public_html/auth-from-scratch/Notes.html -> $REPO/Notes.html
+~/public_html/auth-from-scratch/auth-from-scratch.js -> $REPO/auth-from-scratch.js
+~/public_html/auth-from-scratch/authenticated-page.html -> $REPO/authenticated-page.html
+~/public_html/auth-from-scratch/signin-page.html -> $REPO/signin-page.html
+#+end_example
+
+so you can totally visit the authenticated page because the first goal of this
+project is to figure out authentication and I don't want to worry about
+serving HTML.
+
+However, a button in the authenticated page makes a request that requires you to
+be authenticated.
+
+The server is a program running on the same machine, an Nginx configuration
+routes requests starting with /auth-from-scratch-server to it:
+#+begin_src conf
+http {
+    server {
+        server_name philippe-carphin.ca;
+        listen 443 ssl; # managed by Certbot
+        # <SSL stuff>
+
+        location /auth-from-scratch-server/ {
+            proxy_pass http://localhost:XXXX/;
+        }
+    }
+}
+#+end_src
+
+and the server program serves requests.
+
+* Random Clojure notes
+
+** =printf= vs =println=
+
+Because of some kind of buffer flushing stuff =printf= doesn't work well in
+threads. [[https://stackoverflow.com/a/61538163][Answer on [clojure] printf in sub-thread outputs nothing]].
+
+** HTTP Input stream
+
+The body of a request in this setup is an input stream that needs to be
+consumed.
+
+The proper way seems to be using so called "middlewares" but I just wanted to at
+least see it.  It took a decent amount of searching probably because nobody does
+this.
+
+** Hashing
+
+The best I was able to find is a project that is apparently in its infancy and
+has a weird name: [[https://cljdoc.org/d/buddy/buddy-core/1.9.0/doc/user-guide#project-maturity][buddy/buddy-core]].
+
+* Caveats
+
+I am using email address as a user ID.  Normally, a user should be able to sign
+in with email+password but server side, we should generate an ID.
+
+For signin, we would get the email, lookup the user by email, and get their ID.
+Using the email directly as a key makes it more complicated if the user wants to
+change their email.
+
+* Disclaimer
+
+This is not a demonstration of the proper way to do things.  It is a
+demonstration of how the mechanics work.
+
+* References
+
+- [[https://gist.github.com/siscia/5ed3277551370df3eb8b1063923621d4][User Authentication System (Github Gist from siscia)]]
+
+- [[https://github.com/weavejester/compojure/wiki/Routes-In-Detail][Compojure Wiki: Routes In Detail]]
+
+- [[https://stackoverflow.com/a/477699][Stack Overflow: Submit a form by pressing Enter]]
+
+- [[https://otee.dev/2022/01/25/clojure-backend-using-ring-jetty-compojure.html][My First Clojure Backend Using Ring, Jetty and Compojure]]
+
+- [[https://clojure.org/guides/destructuring][Clojure: Destructuring assignment]]

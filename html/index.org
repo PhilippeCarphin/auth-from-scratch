@@ -1,0 +1,66 @@
+#+TITLE: Auth From Scratch Index
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="json.css"/>
+#+HTML_HEAD: <script type="text/javascript" src="auth-from-scratch.js"/></script>
+
+* Progress
+
+So far, I have a server that responds to registration and sign in requests using the
+forms below.  Everything is stored in an in-memory
+
+#+begin_src clojure
+(def users-db {<email> <result of bcrypt>
+               <email> <result of bcrypt>
+               <email> <result of bcrypt>}
+#+end_src
+
+when a user registers, we just run add the association:
+#+begin_src clojure
+(def users-db (assoc users-db new-email new-result-of-bcrypt))
+#+end_src
+with no check that a user already exists.  This means that you can change your
+password or any other user's password!
+
+This is obviously not desirable.
+
+
+* Register
+
+Use the sign-up to create an association =user:string= where =user= is the email a
+
+(Press Enter to submit)
+
+#+begin_export html
+<form method="POST" action="/auth-from-scratch-server/register">
+    <input type="submit" hidden />
+    <p><text>email</text><input type="email" name="email" required="true"></p>
+    <p><text>password</text><input type="password" name="password" required="true"></p>
+</form>
+#+end_export
+
+* Sign in
+
+The sign-in checks for a key equal to the provided email in the "database".  The
+value is the result from a bcrypt.  Then bcrypt is used to check this against
+the password submitted in the form.
+
+(Press Enter to submit)
+
+#+begin_export html
+<form method="POST" action="/auth-from-scratch-server/signin">
+    <input type="submit" hidden />
+    <p><text>email</text><input type="email" name="email" required="true"></p>
+    <p><text>password</text><input type="password" name="password" required="true"></p>
+</form>
+#+end_export
+
+* Server source code
+
+[[./app-code.html]]
+#+begin_export html
+<embed type="text/html" src="app-code.html" width="800" height="1000">
+#+end_export
+
+* Notes
+
+[[./Notes.html]]
