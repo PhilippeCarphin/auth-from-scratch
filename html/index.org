@@ -1,32 +1,40 @@
 #+TITLE: Auth From Scratch Index
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="json.css"/>
 #+HTML_HEAD: <script type="text/javascript" src="auth-from-scratch.js"/></script>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="extras.css"/>
+
+* Goal
+
+I want to gain a basic understanding of authentication, cookies, and sessions.
+
+If I'm going to do security stuff, it needs to be done right and I'm therefore
+not going to do it myself.
+
+Doing this will help me get an understanding of how authentication libraries
+work so that I can better trouble shoot problems that I will get when I do use
+them.
 
 * Progress
 
-So far, I have a server that responds to registration and sign in requests using the
-forms below.  Everything is stored in an in-memory
+The registration form adds a row =email | bcrypt-result= in a "database".  We
+take the hash of =salt+password= where =salt= is a 16 character random string
+and =password= is the user supplied password.  The string =bcrypt-result= is
+formed by concatenating the salt and the hash.
 
-#+begin_src clojure
-(def users-db {<email> <result of bcrypt>
-               <email> <result of bcrypt>
-               <email> <result of bcrypt>}
-#+end_src
+The sign in form looks up a row by email and takes =bcrypt-result= to verify the
+supplied password:  The salt is the first 16 characters of that string and the
+hash is the remaining ones.  We take the hash of =salt+password= where
+=password= is the password given in the sign-in form.  If the hash matches the
+one in =bcrypt result=, then the user entered the correct password.
 
-when a user registers, we just run add the association:
-#+begin_src clojure
-(def users-db (assoc users-db new-email new-result-of-bcrypt))
-#+end_src
-with no check that a user already exists.  This means that you can change your
-password or any other user's password!
-
-This is obviously not desirable.
-
+See [[./Notes.html#org6c290d2][my notes on bcrypt]] for more info.  I wanted to do this part myself using a
+fixed salt and a hashing function but I also want to get to cookies and session
+stuff so I used a library.
 
 * Register
 
-Use the sign-up to create an association =user:string= where =user= is the email a
+Use the sign-up to create an association =user:string= where =user= is the email
+and =string= is the result of running =bcrypt= on the password.
 
 (Press Enter to submit)
 
@@ -40,9 +48,8 @@ Use the sign-up to create an association =user:string= where =user= is the email
 
 * Sign in
 
-The sign-in checks for a key equal to the provided email in the "database".  The
-value is the result from a bcrypt.  Then bcrypt is used to check this against
-the password submitted in the form.
+The sign in request use the saved =bcrypt-result= (see [[./Notes.html#org6c290d2][my notes on bcrypt]]) to
+verify that the supplied password is the same one entered during registration.
 
 (Press Enter to submit)
 
@@ -56,10 +63,52 @@ the password submitted in the form.
 
 * Server source code
 
-[[./app-code.html]]
 #+begin_export html
-<embed type="text/html" src="app-code.html" width="800" height="1000">
+<embed type="text/html" src="app-code.html" width="800" height="800">
 #+end_export
+
+It's written in [[https://clojure.org][Clojure]] which is really cool but being a functional language, it
+needs some explaining.  Some general concepts:
+- Functions are defined by =(defn FUNCNAME [ARG1 ARG2] BODY)=
+- The last expression of =BODY= is the return value of the function.
+- Function calls are done with =(function arg1 arg2 ...)= that's how LISP is.
+  This is weird but it has some very cool benefits.
+- Defining local variables is done with =(let [var1 value1 var2 value2...] code)=
+  and inside the =let=, =code= can be any number of expressions that will be
+  able to use =var1=, =var2=, etc.  The last expression of the =let= block
+  becomes the value of the =let= block.  This way, in the =register= function,
+  the return value of =(h1-response ...)= becomes the return value of the function.
+- Ifs are also expressions and have a value so when the expression =(if COND
+  EXPR-IF EXPR-ELSE)= is evaluated, the expression COND is evaluated, if it is
+  true, then =EXPR-IF= is evaluated and becomes the value of the IF expression,
+  otherwise =EXPR-ELSE= gets evaluated and becomes the value of the IF
+  expression: The value of =(if t 8 4)= is 8, the value of =(if nil 8 4)= is 4.
+
+Explanation of the functions:
+- =h1-response= just returns a map that is used by the HTTP to create a response
+  containing a message wrapped in some =H1= tags.
+- =parse-email-password-stream= takes the form data which is ~email=phil%40hello.ca&password=12345%2F~
+  and returns a list =("phil@hello.ca" "12345/")=:
+  - =(slurp stream)=: The request object we get from the HTTP library has a
+    stream object for the body which we need to read to have a string containing
+    the body of the requst.  This returns a string
+  - =(clojure.string/split STRING #"&")= splits the result from =slurp= on =&=
+    and now we have a list =L= containing =X= and =Y=.
+  - =(map ring.util.codec/url-decode L)= which creates a new list =L2= by applying
+    =ring.util.codec.url-decode= on each element of =L=.
+  - =(map get-rhs L2)=.  The elements of =L2= are ~email=...~ and
+    ~password=...~.  This forms a final list by calling =get-rhs= on all the
+    elements of =L2=.  The =get-rhs= function calls =(clojure.string.split expr
+    #"=" 2)=.  The =2= ensures that we only split into two components on the
+    first occurence of ~=~.
+    #+begin_src
+    stream
+    -> "email=phil%40hello.ca&password=12345%2F"       << Result of slurp
+    -> ("email=phil%40hello.ca" "password=12345%2F")   << Result of split &
+    -> ("email=phil@hello.ca" "password=12345/")       << Result of map url-decode
+    -> ("phil@hello.ca" "12345/")                      << Result of map get-rhs
+    #+end_src
+
 
 * Notes
 

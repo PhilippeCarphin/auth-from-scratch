@@ -1,0 +1,17 @@
+#content {
+    max-width: 1000px;
+}
+
+.src clojure {
+    background-color: #2d3743;
+    background: #2d3743;
+}
+
+.codeblock,pre.src,#content .literal-block {
+    background: #555555;
+    color: #eeeeee;
+}
+
+.outline-text-2 {
+    max-width: 800px;
+}

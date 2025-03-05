@@ -1,46 +1,8 @@
 #+TITLE: Notes about auth-from-scratch
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../json.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="extras.css"/>
 
 * First setup: Static web pages
-
-First iteration:
-
-Files for this site are in the form of links in my =~/public_html= and are
-served by Nginx.
-
-#+begin_example
-~/public_html/auth-from-scratch/Notes.html -> $REPO/Notes.html
-~/public_html/auth-from-scratch/auth-from-scratch.js -> $REPO/auth-from-scratch.js
-~/public_html/auth-from-scratch/authenticated-page.html -> $REPO/authenticated-page.html
-~/public_html/auth-from-scratch/signin-page.html -> $REPO/signin-page.html
-#+end_example
-
-so you can totally visit the authenticated page because the first goal of this
-project is to figure out authentication and I don't want to worry about
-serving HTML.
-
-However, a button in the authenticated page makes a request that requires you to
-be authenticated.
-
-The server is a program running on the same machine, an Nginx configuration
-routes requests starting with /auth-from-scratch-server to it:
-#+begin_src conf
-http {
-    server {
-        server_name philippe-carphin.ca;
-        listen 443 ssl; # managed by Certbot
-        # <SSL stuff>
-
-        location /auth-from-scratch-server/ {
-            proxy_pass http://localhost:XXXX/;
-        }
-    }
-}
-#+end_src
-
-and the server program serves requests.
-
 * Random Clojure notes
 
 ** =printf= vs =println=
@@ -57,13 +19,11 @@ The proper way seems to be using so called "middlewares" but I just wanted to at
 least see it.  It took a decent amount of searching probably because nobody does
 this.
 
-** Hashing
 
-The best I was able to find is a project that is apparently in its infancy and
-has a weird name: [[https://cljdoc.org/d/buddy/buddy-core/1.9.0/doc/user-guide#project-maturity][buddy/buddy-core]].
 
 * Caveats
 
+** Email as user ID
 I am using email address as a user ID.  Normally, a user should be able to sign
 in with email+password but server side, we should generate an ID.
 
@@ -71,10 +31,67 @@ For signin, we would get the email, lookup the user by email, and get their ID.
 Using the email directly as a key makes it more complicated if the user wants to
 change their email.
 
+** Leaked info
+
+Normally, websites don't distinguish between
+- User exists but you entered the wrong password
+- User doesn't exist
+because this leaks info about who has an account on that site.
+
+The time it takes to serve a request can also give information to an attacker if
+it takes longer to serve an authentication attempt for a user that exists than
+for a user that doesn't exist.
+
+** Returning the bcrypt result
+
+Obviously don't do that.
+
 * Disclaimer
 
 This is not a demonstration of the proper way to do things.  It is a
 demonstration of how the mechanics work.
+
+* Password salting and hashing
+
+I am using a library that implements [[https://en.wikipedia.org/wiki/Bcrypt#Description][=bcrypt=]].
+
+A first idea for storing passwords would be to store the hash of a password.
+For example, user =phil@hello.ca= enters =hello= as their password, we do a
+=sha1= of it:
+#+begin_src shell
+echo "hello" | sha1
+f572d396fae9206628714fb2ce00f72e94f2258f
+#+end_src
+and in our database we store
+#+begin_src 
+phil@hello.ca | f572d396fae9206628714fb2ce00f72e94f2258f
+#+end_src
+
+When I want to authenticate, I give my password =hello= and the server hashes
+that and if the hash of the password matches the hash stored in the database,
+then I am granted access.
+
+This approach is vulnerable to attacks like
+[[https://en.wikipedia.org/wiki/Rainbow_table][Rainbow Tables]].
+
+To mitigate this, we will generate a random string called a salt: =ah23/4#^%_=
+and hash the concatenation of the salt and the password.
+#+begin_src sh
+echo "ah23/4#^%_hello" | sha1
+1d81047222b3e980e51bd94b400923c23fe9a9d0
+#+end_src
+to verify passwords during authentication attempts, we will need the salt too so
+we store
+#+begin_src
+phil@hello.ca | ah23/4#^%_ | 1d81047222b3e980e51bd94b400923c23fe9a9d0
+#+end_src
+
+Now when =phil@hello.ca= wants to authenticate, we look him up in the database,
+take the salt plus the submitted password, hash that and if the result is
+=1d81047222b3e980e51bd94b400923c23fe9a9d0=, then we let the user in.
+
+With [[https://en.wikipedia.org/wiki/Bcrypt#Description][=bcrypt=]], we only store one string that contains some info on the
+algorithm, the salt in plain text, and the hash of salt+password.
 
 * References
 
@@ -87,3 +104,9 @@ demonstration of how the mechanics work.
 - [[https://otee.dev/2022/01/25/clojure-backend-using-ring-jetty-compojure.html][My First Clojure Backend Using Ring, Jetty and Compojure]]
 
 - [[https://clojure.org/guides/destructuring][Clojure: Destructuring assignment]]
+
+- [[https://clojuredocs.org/clojure.core/map][Clojure: Map]]
+
+- [[https://stackoverflow.com/a/38120799][Just Slurp It: Read a stream to a string]]
+
+- [[https://github.com/weavejester/crypto-password][Weavejester's =crypto-password= library]]

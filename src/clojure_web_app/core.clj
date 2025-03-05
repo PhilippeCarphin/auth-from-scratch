@@ -14,8 +14,11 @@
    :headers {"Content-Type" "text/html; charset=utf-8"}
    :body (str "<h1>" message "</h1>")})
 
+(defn get-rhs [expr]
+  (get (clojure.string/split expr #"=" 2) 1))
+
 (defn parse-email-password-stream [stream]
-  (map #(get (clojure.string/split % #"=") 1)
+  (map get-rhs
        (map ring.util.codec/url-decode
             (clojure.string/split
              (slurp stream) #"&"))))
@@ -27,13 +30,15 @@
        (if (crypto.password.bcrypt/check password saved-bcrypt-result)
          (h1-response 200 (str "Hello " email " you have been successfully authenticated"))
          (h1-response 200 (str "Hello " email " you have entered an incorrect password")))
-        (h1-response 200 (str "There is no user with email " email " in the database"))))))
+       (h1-response 200 (str "There is no user with email " email " in the database"))))))
 
 (defn register [request]
   (let [[email password] (parse-email-password-stream (:body request))]
    (let [bcrypt-result (crypto.password.bcrypt/encrypt password)]
      (def users-db (assoc users-db email bcrypt-result))
-     (h1-response 200 (str "Registration successful: Added association {" email ": " bcrypt-result "} in \"database\" (heavy emphasis on the quotes around database)")))))
+     (h1-response 200 (str "Registration successful: Added association {"
+                           email ": " bcrypt-result
+                           "} in \"database\" (heavy emphasis on the quotes around database)")))))
 
 (compojure.core/defroutes app
   (compojure.core/POST "/signin"   args signin)
