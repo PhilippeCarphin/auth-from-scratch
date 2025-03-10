@@ -1,0 +1,19 @@
+#+TITLE: About this directory
+
+All the org files need to be exported to HTML, and the file =app-code.html= must
+be created by running =M-x htmlize-buffer RET= with
+=src/clojure_web_app/core.clj= as the current buffer.
+
+For the org files, this can be done with [[https://github.com/philippecarphin/emacs.d/blob/evil-mode/org-export-html.sh][=<emacs.d>org-export-html.sh]].
+
+This requires generating a CSS file in an interactive Emacs with a certain color
+scheme loaded (ex: adwaita) to produce =org-adwaita.css= using
+=org-html-htmlize-generate-css=.
+
+However the equivalent thing for htmlizing a code buffer in batch mode emacs is
+nuts: [[https://emacs.stackexchange.com/a/38515/19972][Emacs Stack Exchange answer]] and my files [[https://github.com/philippecarphin/emacs.d/blob/evil-mode/org-export-cool.sh][=<emacs.d>org-export-cool.sh=]] and
+[[https://github.com/philippecarphin/emacs.d/blob/evil-mode/org-export-cool.el][=<emacs.d>org-export-cool.el=]].
+
+Since the only time these exports need to be done is while I'm working on the
+repo, it means I already have the files open in Emacs.  So there is no point in
+automating them.

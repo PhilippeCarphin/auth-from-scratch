@@ -139,6 +139,13 @@ I could just do something like
 #+end_src
 instead.
 
+* Packages
+
+Packages that I have come across but don't use
+- [[https://github.com/funcool/buddy-core][funcool/buddy-core]] A cryptographic API for clojure
+- [[https://github.com/clojure/data.json][clojure/data.json]] Clojure library for dealing with JSON
+- [[https://github.com/yogthos/json-html][yogthos/json-html]] A package to generate HTML from clojure objects or JSON
+
 * References
 
 - [[https://gist.github.com/siscia/5ed3277551370df3eb8b1063923621d4][User Authentication System (Github Gist from siscia)]]

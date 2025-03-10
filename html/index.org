@@ -16,6 +16,8 @@ them.
 
 * Progress
 
+** Registration and sign in
+
 The registration form adds a row =email | bcrypt-result= in a "database".  We
 take the hash of =salt+password= where =salt= is a 16 character random string
 and =password= is the user supplied password.  The string =bcrypt-result= is
@@ -30,6 +32,24 @@ one in =bcrypt result=, then the user entered the correct password.
 See [[./Notes.html#org6c290d2][my notes on bcrypt]] for more info.  I wanted to do this part myself using a
 fixed salt and a hashing function but I also want to get to cookies and session
 stuff so I used a library.
+
+** Sessions
+
+I added cookies when signing in (registration does not sing you in).
+
+When you sign in successfully by providing the correct password for your user, I
+generate a string and send =Set-Cookie: session=<that-string>= in the response
+headers.  You now have a session token.
+
+We have "database table" with sessions (it's actually an in memory map whose
+keys are session tokens and whose values are users).
+
+The browser will automatically send =cookie: session=<that-string>= in the
+headers of subsequent requests to the same domain.
+
+The =session= page tests this: It looks for a header =cookie= and assuming the
+only cookie is that one, it will lookup the value of the key =<that-string>= in
+the sessions map.
 
 * Register
 
@@ -61,10 +81,41 @@ verify that the supplied password is the same one entered during registration.
 </form>
 #+end_export
 
+A successful signin will give you a cookie.  The value of the cookie will be
+shown in the response.  This is *bad* since browsers do things to protect
+important cookies.  Namely, preventing javascript code from accessing it by
+preventing JS from accessing the =Set-Cookie= headers of responses.
+
+But if the cookie is in the body of the response that defeats the purpose.
+
+* Session
+
+#+begin_export html
+<p><a href="/auth-from-scratch-server/session">This link</a> will verify if your
+cookie is good.</p>
+#+end_export
+
+* List Sessions
+
+#+begin_export html
+<p><a href="/auth-from-scratch-server/list-sessions">This link</a> gives a list of
+all the session tokens and the associated users.  With this info, you can open
+the dev tools in your browser, set a cookie yourself and steal someone else's session.</p>
+#+end_export
+
+Side note about the values of the cookies.  They would normally be some kind of
+token.  They just need to be long and random enough so that they can't be
+guessed by an attacker.
+
+However, I'm using the concatenation of the user's email with the result of
+running =bcrypt= on the user's email.  This is abnormal but it does two things:
+1. The user's email is part of the cookie's value which helps for debugging.
+2. The =bcrypt= result has enought random characters to look like a legit
+   session tokne
 * Server source code
 
 #+begin_export html
-<embed type="text/html" src="app-code.html" width="800" height="800">
+<embed type="text/html" src="app-code.html" width="800" height="1470">
 #+end_export
 
 It's written in [[https://clojure.org][Clojure]] which is really cool but being a functional language, it
@@ -108,7 +159,6 @@ Explanation of the functions:
     -> ("email=phil@hello.ca" "password=12345/")       << Result of map url-decode
     -> ("phil@hello.ca" "12345/")                      << Result of map get-rhs
     #+end_src
-
 
 * Notes
 
