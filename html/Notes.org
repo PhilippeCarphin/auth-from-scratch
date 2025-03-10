@@ -19,8 +19,6 @@ The proper way seems to be using so called "middlewares" but I just wanted to at
 least see it.  It took a decent amount of searching probably because nobody does
 this.
 
-
-
 * Caveats
 
 ** Email as user ID
@@ -93,20 +91,67 @@ take the salt plus the submitted password, hash that and if the result is
 With [[https://en.wikipedia.org/wiki/Bcrypt#Description][=bcrypt=]], we only store one string that contains some info on the
 algorithm, the salt in plain text, and the hash of salt+password.
 
+
+* Client address stored with sessions
+
+I wanted to have the client address stored with the session tokens even if that
+may not be useful.
+
+This is stored in the key =:remote-addr= of the request map:
+#+begin_src clojure
+(:remote-addr request)
+#+end_src
+
+However, because I use Nginx to reverse proxy requests to the clojure server, it
+was seeing =0:0:0:0:0:0:0:1= as the =:remote-addr=.
+
+So the solution was to ask Nginx to add the client address to the headers of the
+request with
+
+#+begin_src conf
+location /auth-from-scratch-server/ {
+    proxy_pass http://localhost:8989/;
+    proxy_set_header Host philippe-carphin.ca/;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+#+end_src
+
+Now in the server, I use
+#+begin_src clojure
+(defn remote-addr [request]
+  (or (get-in request [:headers "x-forwarded-for"])
+      (:remote-addr request)))
+#+end_src
+to get the value of the header if it is there.
+
+Since this has no purpose related to security, there is no problem but care must
+be taken since there are security concerns.  I cannot assume that the presence
+of the =X-Forwarded-For= header means that the request came from my reverse
+proxy.  Indeed, a client could simply set this header in their request.
+
+Also note that the Nginx variable has the word "add" because this variable is
+the value of the =X-Forwarded-For= header of the incoming request with the
+=$remote_addr= appended to it.
+
+I could just do something like
+#+begin_src conf
+    proxy_set_header Nginx-Remote-Addr $remote_addr
+#+end_src
+instead.
+
 * References
 
 - [[https://gist.github.com/siscia/5ed3277551370df3eb8b1063923621d4][User Authentication System (Github Gist from siscia)]]
-
 - [[https://github.com/weavejester/compojure/wiki/Routes-In-Detail][Compojure Wiki: Routes In Detail]]
-
 - [[https://stackoverflow.com/a/477699][Stack Overflow: Submit a form by pressing Enter]]
-
 - [[https://otee.dev/2022/01/25/clojure-backend-using-ring-jetty-compojure.html][My First Clojure Backend Using Ring, Jetty and Compojure]]
-
 - [[https://clojure.org/guides/destructuring][Clojure: Destructuring assignment]]
-
 - [[https://clojuredocs.org/clojure.core/map][Clojure: Map]]
-
 - [[https://stackoverflow.com/a/38120799][Just Slurp It: Read a stream to a string]]
-
 - [[https://github.com/weavejester/crypto-password][Weavejester's =crypto-password= library]]
+- [[https://serverfault.com/a/920060][Server Fault: Forwarding Client IP with a reverse proxy]]
+- [[https://github.com/nginxinc/nginx-wiki/blob/master/source/start/topics/examples/forwarded.rst][Nginx Wiki: The Forwarded header]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded][MDN: Forwarded header]]
+- [[https://nginx.org/en/docs/http/ngx_http_proxy_module.html#variables][Nginx =$proxy_add_x_forwarded_for=]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: X-Forwarded-For header]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: X-Forwarded-For header security concerns]]
