@@ -141,6 +141,11 @@ instead.
 
 * Packages
 
+- [[https://github.com/weavejester/crypto-password][weavejester/crypto-password]] Library for securely hashing passwords
+- [[https://github.com/ring-clojure/ring][ring/clojure]] Clojure HTTP server abstraction
+- [[https://github.com/weavejester/compojure][weavejester/compojure]] A concise routing library for Ring/Clojure
+- [[https://github.com/weavejester/hiccup][weavejester/hiccup]] Fast library for rendering HTML in Clojure
+
 Packages that I have come across but don't use
 - [[https://github.com/funcool/buddy-core][funcool/buddy-core]] A cryptographic API for clojure
 - [[https://github.com/clojure/data.json][clojure/data.json]] Clojure library for dealing with JSON
@@ -156,9 +161,11 @@ Packages that I have come across but don't use
 - [[https://clojuredocs.org/clojure.core/map][Clojure: Map]]
 - [[https://stackoverflow.com/a/38120799][Just Slurp It: Read a stream to a string]]
 - [[https://github.com/weavejester/crypto-password][Weavejester's =crypto-password= library]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie][MDN: =Set-Cookie= (response header)]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cookie][MDN: =Cookie= (request header)]]
 - [[https://serverfault.com/a/920060][Server Fault: Forwarding Client IP with a reverse proxy]]
-- [[https://github.com/nginxinc/nginx-wiki/blob/master/source/start/topics/examples/forwarded.rst][Nginx Wiki: The Forwarded header]]
-- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded][MDN: Forwarded header]]
+- [[https://github.com/nginxinc/nginx-wiki/blob/master/source/start/topics/examples/forwarded.rst][Nginx Wiki: The =Forwarded= header]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded][MDN: =Forwarded= header]]
 - [[https://nginx.org/en/docs/http/ngx_http_proxy_module.html#variables][Nginx =$proxy_add_x_forwarded_for=]]
-- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: X-Forwarded-For header]]
-- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: X-Forwarded-For header security concerns]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: =X-Forwarded-For= header]]
+- [[https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For#security_and_privacy_concerns][MDN: =X-Forwarded-For= header security concerns]]
